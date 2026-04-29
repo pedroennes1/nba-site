@@ -251,9 +251,9 @@ function Navigation() {
                 {link.label}
               </Link>
             ))}
-            <button className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-orange-600 transition-colors">
+            <Link href="/predictions" className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-orange-600 transition-colors">
               Get Started
-            </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -280,9 +280,9 @@ function Navigation() {
                   {link.label}
                 </Link>
               ))}
-              <button className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-orange-600 transition-colors w-full">
+              <Link href="/predictions" className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-orange-600 transition-colors w-full text-center block">
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         )}

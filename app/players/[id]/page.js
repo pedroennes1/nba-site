@@ -56,4 +56,30 @@ export default async function PlayerPage({ params }) {
             { label: 'Steals', value: player.stl?.toFixed(1) },
             { label: 'Blocks', value: player.blk?.toFixed(1) },
             { label: 'FG%', value: `${(player.fg_pct * 100)?.toFixed(1)}%` },
-            { label: '3P%', value: `${(player.fg3_pct * 1
+            { label: '3P%', value: `${(player.fg3_pct * 100)?.toFixed(1)}%` },
+            { label: '+/-', value: player.plus_minus?.toFixed(1) },
+          ].map(stat => (
+            <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-orange-500">{stat.value}</div>
+              <div className="text-gray-400 text-sm mt-1">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+        <h3 className="text-xl font-bold mb-4">Season History</h3>
+        <div className="space-y-3">
+          {seasons?.map(s => (
+            <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-lg px-5 py-4 flex items-center justify-between">
+              <div className="font-semibold">{s.season}</div>
+              <div className="flex gap-6 text-sm text-gray-400">
+                <span><span className="text-white font-bold">{s.pts?.toFixed(1)}</span> PTS</span>
+                <span><span className="text-white font-bold">{s.reb?.toFixed(1)}</span> REB</span>
+                <span><span className="text-white font-bold">{s.ast?.toFixed(1)}</span> AST</span>
+                <span><span className="text-white font-bold">{(s.fg_pct * 100)?.toFixed(1)}%</span> FG</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  )
+}

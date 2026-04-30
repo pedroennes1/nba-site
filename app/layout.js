@@ -15,7 +15,7 @@ export const metadata = {
   title: "HoopsIQ - AI-Powered NBA Analytics",
   description: "ML-powered NBA win probabilities, power rankings, and advanced stats for every team and player.",
   verification: {
-    google: "afa8a9c07c5ef092",
+    google: "10Ie7wurq9xJNzmH7fHX8EDqsOUSH1S0_qMhQxUIyZI",
   },
 }
 

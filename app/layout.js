@@ -12,9 +12,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "NBA Edge - Analytics & Predictions",
+  title: "HoopsIQ - AI-Powered NBA Analytics",
   description: "ML-powered NBA win probabilities, power rankings, and advanced stats for every team and player.",
-};
+  verification: {
+    google: "afa8a9c07c5ef092",
+  },
+}
 
 export default function RootLayout({ children }) {
   return (

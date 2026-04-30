@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function PredictionsPage() {
   const [isOpen, setIsOpen] = useState(false)
-  const [homeTeam, setHomeTeam] = useState("")
-  const [awayTeam, setAwayTeam] = useState("")
+  const [games, setGames] = useState([])
+  const [loadingGames, setLoadingGames] = useState(true)
+  const [selectedGame, setSelectedGame] = useState(null)
   const [prediction, setPrediction] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -28,111 +29,59 @@ export default function PredictionsPage() {
     { href: "/predictions", label: "Predictions" },
   ]
 
-  const teams = [
-    { abbr: "ATL", name: "Atlanta Hawks" },
-    { abbr: "BOS", name: "Boston Celtics" },
-    { abbr: "BKN", name: "Brooklyn Nets" },
-    { abbr: "CHA", name: "Charlotte Hornets" },
-    { abbr: "CHI", name: "Chicago Bulls" },
-    { abbr: "CLE", name: "Cleveland Cavaliers" },
-    { abbr: "DAL", name: "Dallas Mavericks" },
-    { abbr: "DEN", name: "Denver Nuggets" },
-    { abbr: "DET", name: "Detroit Pistons" },
-    { abbr: "GSW", name: "Golden State Warriors" },
-    { abbr: "HOU", name: "Houston Rockets" },
-    { abbr: "IND", name: "Indiana Pacers" },
-    { abbr: "LAC", name: "LA Clippers" },
-    { abbr: "LAL", name: "Los Angeles Lakers" },
-    { abbr: "MEM", name: "Memphis Grizzlies" },
-    { abbr: "MIA", name: "Miami Heat" },
-    { abbr: "MIL", name: "Milwaukee Bucks" },
-    { abbr: "MIN", name: "Minnesota Timberwolves" },
-    { abbr: "NOP", name: "New Orleans Pelicans" },
-    { abbr: "NYK", name: "New York Knicks" },
-    { abbr: "OKC", name: "Oklahoma City Thunder" },
-    { abbr: "ORL", name: "Orlando Magic" },
-    { abbr: "PHI", name: "Philadelphia 76ers" },
-    { abbr: "PHX", name: "Phoenix Suns" },
-    { abbr: "POR", name: "Portland Trail Blazers" },
-    { abbr: "SAC", name: "Sacramento Kings" },
-    { abbr: "SAS", name: "San Antonio Spurs" },
-    { abbr: "TOR", name: "Toronto Raptors" },
-    { abbr: "UTA", name: "Utah Jazz" },
-    { abbr: "WAS", name: "Washington Wizards" },
-  ]
+  const teamNames = {
+    ATL: "Atlanta Hawks", BOS: "Boston Celtics", BKN: "Brooklyn Nets",
+    CHA: "Charlotte Hornets", CHI: "Chicago Bulls", CLE: "Cleveland Cavaliers",
+    DAL: "Dallas Mavericks", DEN: "Denver Nuggets", DET: "Detroit Pistons",
+    GSW: "Golden State Warriors", HOU: "Houston Rockets", IND: "Indiana Pacers",
+    LAC: "LA Clippers", LAL: "Los Angeles Lakers", MEM: "Memphis Grizzlies",
+    MIA: "Miami Heat", MIL: "Milwaukee Bucks", MIN: "Minnesota Timberwolves",
+    NOP: "New Orleans Pelicans", NYK: "New York Knicks", OKC: "Oklahoma City Thunder",
+    ORL: "Orlando Magic", PHI: "Philadelphia 76ers", PHX: "Phoenix Suns",
+    POR: "Portland Trail Blazers", SAC: "Sacramento Kings", SAS: "San Antonio Spurs",
+    TOR: "Toronto Raptors", UTA: "Utah Jazz", WAS: "Washington Wizards",
+  }
 
-  const features = [
-    {
-      title: "Historical Data Analysis",
-      description: "Our model analyzes over 20 years of NBA game data, including head-to-head records, seasonal performance trends, and historical matchup outcomes.",
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 3v18h18" />
-          <path d="m19 9-5 5-4-4-3 3" />
-        </svg>
-      ),
-    },
-    {
-      title: "Real-Time Stats",
-      description: "Live player statistics, injury reports, and roster changes are factored into predictions, ensuring accuracy based on the most current information.",
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      ),
-    },
-    {
-      title: "Machine Learning",
-      description: "Advanced neural networks trained on millions of data points continuously improve prediction accuracy through deep learning algorithms.",
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a4 4 0 0 0-4 4c0 1.1.5 2.1 1.2 2.8L4 14.2c-.6.6-1 1.4-1 2.3V20a2 2 0 0 0 2 2h3.5c.9 0 1.7-.4 2.3-1l5.4-5.2c.7.7 1.7 1.2 2.8 1.2a4 4 0 0 0 0-8" />
-          <circle cx="12" cy="6" r="2" />
-        </svg>
-      ),
-    },
-  ]
+  const teamIds = {
+    ATL: 1610612737, BOS: 1610612738, BKN: 1610612751, CHA: 1610612766,
+    CHI: 1610612741, CLE: 1610612739, DAL: 1610612742, DEN: 1610612743,
+    DET: 1610612765, GSW: 1610612744, HOU: 1610612745, IND: 1610612754,
+    LAC: 1610612746, LAL: 1610612747, MEM: 1610612763, MIA: 1610612748,
+    MIL: 1610612749, MIN: 1610612750, NOP: 1610612740, NYK: 1610612752,
+    OKC: 1610612760, ORL: 1610612753, PHI: 1610612755, PHX: 1610612756,
+    POR: 1610612757, SAC: 1610612758, SAS: 1610612759, TOR: 1610612761,
+    UTA: 1610612762, WAS: 1610612764,
+  }
 
-  const handlePredict = async () => {
-    if (!homeTeam || !awayTeam) return
-    if (homeTeam === awayTeam) {
-      setError("Please select two different teams")
-      return
-    }
+  useEffect(() => {
+    fetch("https://nba-api-r19o.onrender.com/today-games")
+      .then((res) => res.json())
+      .then((data) => {
+        setGames(data.games || [])
+        setLoadingGames(false)
+      })
+      .catch(() => setLoadingGames(false))
+  }, [])
 
-    setLoading(true)
-    setError(null)
+  const handleGameClick = async (game) => {
+    setSelectedGame(game)
     setPrediction(null)
+    setError(null)
+    setLoading(true)
 
     try {
       const response = await fetch("https://nba-api-r19o.onrender.com/predict-matchup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          home_team: homeTeam,
-          away_team: awayTeam,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ home_team: game.home_team, away_team: game.away_team }),
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to get prediction")
-      }
-
       const data = await response.json()
       setPrediction(data)
-    } catch (err) {
+    } catch {
       setError("Unable to get prediction. Please try again.")
     } finally {
       setLoading(false)
     }
-  }
-
-  const getTeamName = (abbr) => {
-    const team = teams.find((t) => t.abbr === abbr)
-    return team ? team.name : abbr
   }
 
   return (
@@ -197,89 +146,94 @@ export default function PredictionsPage() {
       {/* Page Header */}
       <section className="py-12 md:py-16 border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Win Probability Predictor</h1>
-          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Select two teams and let our AI-powered model predict the outcome using each team's real season stats.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Today's Games</h1>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Click on any game to get an AI-powered win probability prediction using each team's real season stats.</p>
         </div>
       </section>
 
-      {/* Prediction Section */}
+      {/* Today's Games */}
       <section className="py-12 md:py-16">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 md:p-8 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-3">Home Team</label>
-                <select value={homeTeam} onChange={(e) => setHomeTeam(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
-                  <option value="">Select Home Team</option>
-                  {teams.map((team) => <option key={team.abbr} value={team.abbr}>{team.name} ({team.abbr})</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-3">Away Team</label>
-                <select value={awayTeam} onChange={(e) => setAwayTeam(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
-                  <option value="">Select Away Team</option>
-                  {teams.map((team) => <option key={team.abbr} value={team.abbr}>{team.name} ({team.abbr})</option>)}
-                </select>
-              </div>
+          {loadingGames ? (
+            <div className="text-center py-16">
+              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-zinc-500">Loading today's games...</p>
             </div>
-
-            {homeTeam && awayTeam && (
-              <div className="flex items-center justify-center gap-4 mb-8 py-4 border-y border-zinc-800">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-2 border-2 border-zinc-700">
-                    <span className="font-bold text-white text-lg">{homeTeam}</span>
+          ) : games.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-zinc-500 text-lg">No games scheduled for today.</p>
+            </div>
+          ) : (
+            <div className="space-y-4 mb-12">
+              <h2 className="text-xl font-bold text-white mb-6">Select a Game to Predict</h2>
+              {games.map((game) => (
+                <button
+                  key={game.game_id}
+                  onClick={() => handleGameClick(game)}
+                  className={`w-full bg-zinc-900/50 border rounded-xl p-6 hover:border-orange-500/50 hover:bg-zinc-900 transition-all text-left ${selectedGame?.game_id === game.game_id ? "border-orange-500 bg-zinc-900" : "border-zinc-800"}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <div className="w-14 h-14 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mb-2">
+                          <img
+                            src={`https://cdn.nba.com/logos/nba/${teamIds[game.away_team]}/global/L/logo.svg`}
+                            alt={game.away_team}
+                            className="w-10 h-10 object-contain"
+                            onError={(e) => { e.target.style.display='none' }}
+                          />
+                        </div>
+                        <p className="text-white font-bold">{game.away_team}</p>
+                        <p className="text-zinc-500 text-xs">{teamNames[game.away_team]}</p>
+                      </div>
+                      <div className="text-center px-4">
+                        <span className="text-2xl font-bold text-orange-500">@</span>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-14 h-14 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mb-2">
+                          <img
+                            src={`https://cdn.nba.com/logos/nba/${teamIds[game.home_team]}/global/L/logo.svg`}
+                            alt={game.home_team}
+                            className="w-10 h-10 object-contain"
+                            onError={(e) => { e.target.style.display='none' }}
+                          />
+                        </div>
+                        <p className="text-white font-bold">{game.home_team}</p>
+                        <p className="text-zinc-500 text-xs">{teamNames[game.home_team]}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-zinc-500 uppercase tracking-wide">{game.status}</span>
+                      <p className="text-orange-500 text-sm font-medium mt-1">Click to predict →</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-zinc-500">Home</p>
-                </div>
-                <span className="text-2xl font-bold text-orange-500">VS</span>
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-2 border-2 border-zinc-700">
-                    <span className="font-bold text-white text-lg">{awayTeam}</span>
-                  </div>
-                  <p className="text-sm text-zinc-500">Away</p>
-                </div>
-              </div>
-            )}
+                </button>
+              ))}
+            </div>
+          )}
 
-            {error && <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-center">{error}</div>}
+          {/* Loading */}
+          {loading && (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-zinc-500">Analyzing matchup...</p>
+            </div>
+          )}
 
-            <button onClick={handlePredict} disabled={!homeTeam || !awayTeam || loading} className="w-full bg-orange-500 text-white py-4 rounded-xl font-semibold text-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Analyzing...
-                </>
-              ) : "Predict Winner"}
-            </button>
-          </div>
+          {/* Error */}
+          {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-center mb-8">{error}</div>}
 
-          {prediction && !prediction.error && (
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 md:p-8 mb-8">
+          {/* Prediction Results */}
+          {prediction && !prediction.error && selectedGame && (
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 md:p-8">
               <h2 className="text-xl font-bold text-white text-center mb-6">Prediction Results</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-6 rounded-xl border-2 transition-all ${prediction.home_win_probability > prediction.away_win_probability ? "bg-orange-500/10 border-orange-500" : "bg-zinc-800/50 border-zinc-700"}`}>
-                  <div className="text-center">
-                    <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4 border-2 border-zinc-600">
-                      <span className="font-bold text-white text-xl">{homeTeam}</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-1">{getTeamName(homeTeam)}</h3>
-                    <p className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Home</p>
-                    <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">{prediction.home_win_probability}%</div>
-                    <p className="text-sm text-zinc-400">Win Probability</p>
-                    {prediction.home_win_probability > prediction.away_win_probability && (
-                      <div className="mt-4 inline-flex items-center gap-1 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Predicted Winner</div>
-                    )}
-                  </div>
-                </div>
                 <div className={`p-6 rounded-xl border-2 transition-all ${prediction.away_win_probability > prediction.home_win_probability ? "bg-orange-500/10 border-orange-500" : "bg-zinc-800/50 border-zinc-700"}`}>
                   <div className="text-center">
-                    <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4 border-2 border-zinc-600">
-                      <span className="font-bold text-white text-xl">{awayTeam}</span>
+                    <div className="w-20 h-20 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-4">
+                      <img src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.away_team]}/global/L/logo.svg`} alt={selectedGame.away_team} className="w-16 h-16 object-contain" onError={(e) => { e.target.style.display='none' }} />
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-1">{getTeamName(awayTeam)}</h3>
+                    <h3 className="text-lg font-semibold text-white mb-1">{teamNames[selectedGame.away_team]}</h3>
                     <p className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Away</p>
                     <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">{prediction.away_win_probability}%</div>
                     <p className="text-sm text-zinc-400">Win Probability</p>
@@ -288,42 +242,33 @@ export default function PredictionsPage() {
                     )}
                   </div>
                 </div>
+                <div className={`p-6 rounded-xl border-2 transition-all ${prediction.home_win_probability > prediction.away_win_probability ? "bg-orange-500/10 border-orange-500" : "bg-zinc-800/50 border-zinc-700"}`}>
+                  <div className="text-center">
+                    <div className="w-20 h-20 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-4">
+                      <img src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.home_team]}/global/L/logo.svg`} alt={selectedGame.home_team} className="w-16 h-16 object-contain" onError={(e) => { e.target.style.display='none' }} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-1">{teamNames[selectedGame.home_team]}</h3>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Home</p>
+                    <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">{prediction.home_win_probability}%</div>
+                    <p className="text-sm text-zinc-400">Win Probability</p>
+                    {prediction.home_win_probability > prediction.away_win_probability && (
+                      <div className="mt-4 inline-flex items-center gap-1 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Predicted Winner</div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="mt-8 pt-6 border-t border-zinc-800">
                 <div className="flex justify-between text-sm text-zinc-400 mb-2">
-                  <span>{homeTeam}</span>
-                  <span>{awayTeam}</span>
+                  <span>{selectedGame.away_team}</span>
+                  <span>{selectedGame.home_team}</span>
                 </div>
                 <div className="h-4 bg-zinc-800 rounded-full overflow-hidden flex">
-                  <div className="bg-orange-500 transition-all duration-500" style={{ width: `${prediction.home_win_probability}%` }} />
-                  <div className="bg-zinc-600 transition-all duration-500" style={{ width: `${prediction.away_win_probability}%` }} />
+                  <div className="bg-orange-500 transition-all duration-500" style={{ width: `${prediction.away_win_probability}%` }} />
+                  <div className="bg-zinc-600 transition-all duration-500" style={{ width: `${prediction.home_win_probability}%` }} />
                 </div>
               </div>
             </div>
           )}
-
-          {prediction?.error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-center mb-8">{prediction.error}</div>
-          )}
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-12 md:py-16 border-t border-zinc-800 bg-zinc-900/30">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How Our AI Model Works</h2>
-            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Our prediction engine uses each team's real season stats to deliver accurate game outcome predictions.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <div key={feature.title} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 hover:border-orange-500/50 transition-all group">
-                <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4 text-orange-500 group-hover:bg-orange-500/20 transition-colors">{feature.icon}</div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

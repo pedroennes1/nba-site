@@ -1,5 +1,4 @@
 "use client"
-
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
@@ -68,9 +67,8 @@ export default function PredictionsPage() {
     setPrediction(null)
     setError(null)
     setLoading(true)
-
     try {
-      const response = await fetch("https://nba-api-r19o.onrender.com/predict-matchup", {
+      const response = await fetch("https://nba-api-r19o.onrender.com/predict-score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ home_team: game.home_team, away_team: game.away_team }),
@@ -147,7 +145,7 @@ export default function PredictionsPage() {
       <section className="py-12 md:py-16 border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Today's Games</h1>
-          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Click on any game to get an AI-powered win probability prediction using each team's real season stats.</p>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Click on any game to get an AI-powered prediction — win probability, projected score, and spread analysis.</p>
         </div>
       </section>
 
@@ -180,7 +178,7 @@ export default function PredictionsPage() {
                             src={`https://cdn.nba.com/logos/nba/${teamIds[game.away_team]}/global/L/logo.svg`}
                             alt={game.away_team}
                             className="w-10 h-10 object-contain"
-                            onError={(e) => { e.target.style.display='none' }}
+                            onError={(e) => { e.target.style.display = 'none' }}
                           />
                         </div>
                         <p className="text-white font-bold">{game.away_team}</p>
@@ -195,7 +193,7 @@ export default function PredictionsPage() {
                             src={`https://cdn.nba.com/logos/nba/${teamIds[game.home_team]}/global/L/logo.svg`}
                             alt={game.home_team}
                             className="w-10 h-10 object-contain"
-                            onError={(e) => { e.target.style.display='none' }}
+                            onError={(e) => { e.target.style.display = 'none' }}
                           />
                         </div>
                         <p className="text-white font-bold">{game.home_team}</p>
@@ -216,7 +214,7 @@ export default function PredictionsPage() {
           {loading && (
             <div className="text-center py-8">
               <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-zinc-500">Analyzing matchup...</p>
+              <p className="text-zinc-500">Running 1,000 game simulations...</p>
             </div>
           )}
 
@@ -226,13 +224,65 @@ export default function PredictionsPage() {
           {/* Prediction Results */}
           {prediction && !prediction.error && selectedGame && (
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 md:p-8">
-              <h2 className="text-xl font-bold text-white text-center mb-6">Prediction Results</h2>
+              <h2 className="text-xl font-bold text-white text-center mb-8">Prediction Results</h2>
+
+              {/* Predicted Score */}
+              <div className="flex items-center justify-center gap-4 md:gap-10 mb-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-3">
+                    <img
+                      src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.away_team]}/global/L/logo.svg`}
+                      alt={selectedGame.away_team}
+                      className="w-12 h-12 object-contain"
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  </div>
+                  <p className="text-zinc-400 text-sm mb-1">{selectedGame.away_team}</p>
+                  <p className="text-zinc-500 text-xs mb-2">Away</p>
+                  <p className="text-5xl md:text-6xl font-bold text-white">{Math.round(prediction.predicted_away_score)}</p>
+                </div>
+
+                <div className="text-center px-2">
+                  <p className="text-zinc-600 text-xs uppercase tracking-widest mb-1">Projected</p>
+                  <p className="text-orange-500 font-bold text-lg">—</p>
+                  <p className="text-zinc-600 text-xs uppercase tracking-widest mt-1">Score</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-3">
+                    <img
+                      src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.home_team]}/global/L/logo.svg`}
+                      alt={selectedGame.home_team}
+                      className="w-12 h-12 object-contain"
+                      onError={(e) => { e.target.style.display = 'none' }}
+                    />
+                  </div>
+                  <p className="text-zinc-400 text-sm mb-1">{selectedGame.home_team}</p>
+                  <p className="text-zinc-500 text-xs mb-2">Home</p>
+                  <p className="text-5xl md:text-6xl font-bold text-white">{Math.round(prediction.predicted_home_score)}</p>
+                </div>
+              </div>
+
+              {/* Spread / Total / Simulations */}
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="bg-zinc-800/60 rounded-xl p-4 text-center">
+                  <p className="text-zinc-500 text-xs uppercase tracking-wide mb-2">Spread</p>
+                  <p className="text-orange-500 font-bold text-lg">{prediction.spread_label}</p>
+                </div>
+                <div className="bg-zinc-800/60 rounded-xl p-4 text-center">
+                  <p className="text-zinc-500 text-xs uppercase tracking-wide mb-2">Total (O/U)</p>
+                  <p className="text-orange-500 font-bold text-lg">{prediction.predicted_total}</p>
+                </div>
+                <div className="bg-zinc-800/60 rounded-xl p-4 text-center">
+                  <p className="text-zinc-500 text-xs uppercase tracking-wide mb-2">Simulations</p>
+                  <p className="text-orange-500 font-bold text-lg">{prediction.simulations_run?.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Win Probability Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`p-6 rounded-xl border-2 transition-all ${prediction.away_win_probability > prediction.home_win_probability ? "bg-orange-500/10 border-orange-500" : "bg-zinc-800/50 border-zinc-700"}`}>
                   <div className="text-center">
-                    <div className="w-20 h-20 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-4">
-                      <img src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.away_team]}/global/L/logo.svg`} alt={selectedGame.away_team} className="w-16 h-16 object-contain" onError={(e) => { e.target.style.display='none' }} />
-                    </div>
                     <h3 className="text-lg font-semibold text-white mb-1">{teamNames[selectedGame.away_team]}</h3>
                     <p className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Away</p>
                     <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">{prediction.away_win_probability}%</div>
@@ -244,9 +294,6 @@ export default function PredictionsPage() {
                 </div>
                 <div className={`p-6 rounded-xl border-2 transition-all ${prediction.home_win_probability > prediction.away_win_probability ? "bg-orange-500/10 border-orange-500" : "bg-zinc-800/50 border-zinc-700"}`}>
                   <div className="text-center">
-                    <div className="w-20 h-20 rounded-lg bg-zinc-800 overflow-hidden flex items-center justify-center mx-auto mb-4">
-                      <img src={`https://cdn.nba.com/logos/nba/${teamIds[selectedGame.home_team]}/global/L/logo.svg`} alt={selectedGame.home_team} className="w-16 h-16 object-contain" onError={(e) => { e.target.style.display='none' }} />
-                    </div>
                     <h3 className="text-lg font-semibold text-white mb-1">{teamNames[selectedGame.home_team]}</h3>
                     <p className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Home</p>
                     <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">{prediction.home_win_probability}%</div>
@@ -257,15 +304,18 @@ export default function PredictionsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Probability Bar */}
               <div className="mt-8 pt-6 border-t border-zinc-800">
                 <div className="flex justify-between text-sm text-zinc-400 mb-2">
-                  <span>{selectedGame.away_team}</span>
-                  <span>{selectedGame.home_team}</span>
+                  <span>{selectedGame.away_team} {prediction.away_win_probability}%</span>
+                  <span>{prediction.home_win_probability}% {selectedGame.home_team}</span>
                 </div>
                 <div className="h-4 bg-zinc-800 rounded-full overflow-hidden flex">
                   <div className="bg-orange-500 transition-all duration-500" style={{ width: `${prediction.away_win_probability}%` }} />
                   <div className="bg-zinc-600 transition-all duration-500" style={{ width: `${prediction.home_win_probability}%` }} />
                 </div>
+                <p className="text-center text-xs text-zinc-600 mt-3">Based on {prediction.simulations_run?.toLocaleString()} Monte Carlo simulations · Model v{prediction.model_version}</p>
               </div>
             </div>
           )}
